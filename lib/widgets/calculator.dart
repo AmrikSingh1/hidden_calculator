@@ -223,8 +223,8 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
   Widget _buildButton(
     String text, 
     VoidCallback onPressed, {
-    Color backgroundColor = AppColors.numberButton,
-    Color textColor = Colors.white,
+    Color backgroundColor = const Color(0xFFEEEEEE),
+    Color textColor = Colors.black,
     bool isWide = false,
   }) {
     return AnimatedBuilder(
@@ -248,9 +248,9 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
                 borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
                 boxShadow: [
                   BoxShadow(
-                    color: backgroundColor.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+                    color: Colors.grey.withOpacity(0.2),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -276,8 +276,15 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingMedium),
       decoration: BoxDecoration(
-        color: AppColors.calculatorBackground,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            blurRadius: 10,
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -288,13 +295,17 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
               horizontal: AppDimensions.paddingLarge,
               vertical: AppDimensions.paddingMedium,
             ),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
                   _result,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                  style: const TextStyle(
+                    color: Color(0xFF757575),
                     fontSize: 24,
                   ),
                 ),
@@ -302,7 +313,7 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
                 Text(
                   _input,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
                   ),
@@ -317,22 +328,24 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
               _buildButton(
                 AppStrings.clear,
                 _clear,
-                backgroundColor: AppColors.functionButton,
+                backgroundColor: const Color(0xFFFF5252),
+                textColor: Colors.white,
               ),
               _buildButton(
                 AppStrings.plusMinus,
                 _toggleSign,
-                backgroundColor: AppColors.functionButton,
+                backgroundColor: const Color(0xFFE0E0E0),
               ),
               _buildButton(
                 AppStrings.percent,
                 _calculatePercentage,
-                backgroundColor: AppColors.functionButton,
+                backgroundColor: const Color(0xFFE0E0E0),
               ),
               _buildButton(
                 AppStrings.divide,
                 () => _setOperation(AppStrings.divide),
-                backgroundColor: AppColors.operatorButton,
+                backgroundColor: AppColors.primary,
+                textColor: Colors.white,
               ),
             ],
           ),
@@ -345,7 +358,8 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
               _buildButton(
                 AppStrings.multiply,
                 () => _setOperation(AppStrings.multiply),
-                backgroundColor: AppColors.operatorButton,
+                backgroundColor: AppColors.primary,
+                textColor: Colors.white,
               ),
             ],
           ),
@@ -358,7 +372,8 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
               _buildButton(
                 AppStrings.subtract,
                 () => _setOperation(AppStrings.subtract),
-                backgroundColor: AppColors.operatorButton,
+                backgroundColor: AppColors.primary,
+                textColor: Colors.white,
               ),
             ],
           ),
@@ -371,7 +386,8 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
               _buildButton(
                 AppStrings.add,
                 () => _setOperation(AppStrings.add),
-                backgroundColor: AppColors.operatorButton,
+                backgroundColor: AppColors.primary,
+                textColor: Colors.white,
               ),
             ],
           ),
@@ -390,7 +406,8 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
               _buildButton(
                 AppStrings.equals,
                 _calculateResult,
-                backgroundColor: AppColors.operatorButton,
+                backgroundColor: AppColors.primary,
+                textColor: Colors.white,
               ),
             ],
           ),

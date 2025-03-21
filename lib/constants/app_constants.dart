@@ -1,27 +1,41 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Primary colors
-  static const Color primary = Color(0xFF6200EE);
-  static const Color primaryVariant = Color(0xFF3700B3);
-  static const Color secondary = Color(0xFF03DAC6);
-  static const Color secondaryVariant = Color(0xFF018786);
+  // Primary and accent colors
+  static const primary = Color(0xFF4A6BF8);
+  static const primaryVariant = Color(0xFF3B5CEA);
+  static const secondary = Color(0xFF25CAFC);
+  static const secondaryVariant = Color(0xFF00A6D8);
+  static const error = Color(0xFFE53935);
+
+  // Text colors
+  static const onPrimary = Color(0xFFFFFFFF);
+  static const onSecondary = Color(0xFF000000);
+  static const onError = Color(0xFFFFFFFF);
+
+  // Dark theme colors
+  static const background = Color(0xFF121212);
+  static const surface = Color(0xFF1E1E1E);
+  static const onBackground = Color(0xFFF5F5F5);
+  static const onSurface = Color(0xFFE0E0E0);
   
+  // Light theme colors
+  static const lightBackground = Color(0xFFF5F5F5);
+  static const lightSurface = Color(0xFFFFFFFF);
+  static const lightOnBackground = Color(0xFF212121);
+  static const lightOnSurface = Color(0xFF424242);
+
   // Calculator colors
-  static const Color calculatorBackground = Color(0xFF121212);
-  static const Color operatorButton = Color(0xFFFFA000);
-  static const Color numberButton = Color(0xFF333333);
-  static const Color functionButton = Color(0xFF616161);
-  
-  // Theme colors
-  static const Color background = Color(0xFF121212);
-  static const Color surface = Color(0xFF1E1E1E);
-  static const Color error = Color(0xFFCF6679);
-  static const Color onPrimary = Colors.white;
-  static const Color onSecondary = Colors.black;
-  static const Color onBackground = Colors.white;
-  static const Color onSurface = Colors.white;
-  static const Color onError = Colors.black;
+  static const calculatorBackground = Color(0xFF121212);
+  static const calculatorDisplay = Color(0xFF1E1E1E);
+  static const calculatorText = Color(0xFFF5F5F5);
+  static const calculatorOperator = Color(0xFF4A6BF8);
+  static const calculatorButton = Color(0xFF2A2A2A);
+  static const calculatorButtonText = Color(0xFFF5F5F5);
+  static const calculatorEqual = Color(0xFF4A6BF8);
+  static const calculatorEqualText = Color(0xFFFFFFFF);
+  static const calculatorClear = Color(0xFFE53935);
+  static const calculatorClearText = Color(0xFFFFFFFF);
 }
 
 class AppStrings {
@@ -51,10 +65,15 @@ class AppDimensions {
   static const double paddingSmall = 8.0;
   static const double paddingMedium = 16.0;
   static const double paddingLarge = 24.0;
+  static const double paddingXLarge = 32.0;
   
-  static const double borderRadiusSmall = 8.0;
-  static const double borderRadiusMedium = 16.0;
-  static const double borderRadiusLarge = 24.0;
+  static const double borderRadiusSmall = 4.0;
+  static const double borderRadiusMedium = 8.0;
+  static const double borderRadiusLarge = 16.0;
+  
+  static const double iconSizeSmall = 16.0;
+  static const double iconSizeMedium = 24.0;
+  static const double iconSizeLarge = 32.0;
   
   static const double calculatorButtonSize = 70.0;
   static const double calculatorButtonPadding = 12.0;
