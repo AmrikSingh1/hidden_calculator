@@ -79,29 +79,51 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
         return;
       }
       
-      // Since we can't pick files without file_picker, we'll show a dialog explaining the limitation
-      showDialog(
+      // Show upload options menu
+      showModalBottomSheet(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Feature Unavailable'),
-          content: Text(
-            'The file picker functionality has been removed for compatibility reasons.\n\n'
-            'In a production app, this would use the proper file picking functionality.\n\n'
-            'For now, you can add notes or test with sample files.'
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // For testing purposes, we can add a dummy file
+        backgroundColor: AppColors.background,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(
+                _selectedType == VaultItemType.photo ? Icons.camera_alt : 
+                _selectedType == VaultItemType.video ? Icons.videocam : 
+                Icons.create_new_folder,
+                color: AppColors.primary,
+              ),
+              title: Text('Capture ${_getNameForType(_selectedType).toLowerCase()}'),
+              onTap: () {
+                Navigator.pop(context);
+                _captureNewMedia();
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                _selectedType == VaultItemType.photo ? Icons.photo_library : 
+                _selectedType == VaultItemType.video ? Icons.video_library : 
+                Icons.folder_open,
+                color: AppColors.primary,
+              ),
+              title: Text('Upload from device'),
+              onTap: () {
+                Navigator.pop(context);
+                _uploadFromDevice();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.note_add, color: AppColors.primary),
+              title: const Text('Create sample file (for testing)'),
+              onTap: () {
+                Navigator.pop(context);
                 _addSampleFile();
               },
-              child: const Text('Add Sample File'),
             ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
+            const SizedBox(height: 20),
           ],
         ),
       );
@@ -112,24 +134,127 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
     }
   }
   
+  Future<void> _captureNewMedia() async {
+    try {
+      await _checkPermissions();
+      
+      // Show a message about the implementation
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('In a full implementation, this would open the camera to capture ${_getNameForType(_selectedType).toLowerCase()}.'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      
+      // For demonstration, add a sample file instead
+      _addSampleFile();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+  
+  Future<void> _uploadFromDevice() async {
+    try {
+      await _checkPermissions();
+      
+      // Show a message about the implementation
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('In a full implementation, this would open a file picker to select ${_getNameForType(_selectedType).toLowerCase()} files.'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      
+      // For demonstration, add a sample file instead
+      _addSampleFile();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+  
+  Future<void> _checkPermissions() async {
+    if (_selectedType == VaultItemType.photo || _selectedType == VaultItemType.video) {
+      final cameraStatus = await Permission.camera.request();
+      final storageStatus = await Permission.storage.request();
+      
+      if (cameraStatus.isDenied || storageStatus.isDenied) {
+        throw 'Camera or storage permission denied';
+      }
+    } else {
+      final storageStatus = await Permission.storage.request();
+      
+      if (storageStatus.isDenied) {
+        throw 'Storage permission denied';
+      }
+    }
+  }
+  
   Future<void> _addSampleFile() async {
     setState(() {
       _isLoading = true;
     });
     
     try {
-      // Create a temporary file for demonstration
       final directory = await getTemporaryDirectory();
-      final sampleFile = File('${directory.path}/sample_${DateTime.now().millisecondsSinceEpoch}.txt');
+      late File sampleFile;
+      late String fileName;
       
-      // Write some sample content
-      await sampleFile.writeAsString('This is a sample file created on ${DateTime.now()}');
+      // Create different sample files based on type
+      switch (_selectedType) {
+        case VaultItemType.photo:
+          // Create a text file that simulates an image file
+          fileName = 'photo_${DateTime.now().millisecondsSinceEpoch}.jpg';
+          sampleFile = File('${directory.path}/$fileName');
+          await sampleFile.writeAsString('This is a sample image file created on ${DateTime.now()}');
+          break;
+          
+        case VaultItemType.video:
+          // Create a text file that simulates a video file
+          fileName = 'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
+          sampleFile = File('${directory.path}/$fileName');
+          await sampleFile.writeAsString('This is a sample video file created on ${DateTime.now()}');
+          break;
+          
+        case VaultItemType.document:
+          // Create a text file with some sample content
+          fileName = 'document_${DateTime.now().millisecondsSinceEpoch}.txt';
+          sampleFile = File('${directory.path}/$fileName');
+          await sampleFile.writeAsString('''
+Sample Document
+Created on: ${DateTime.now()}
+
+This is a sample document file for the Hidden Calculator app vault.
+In a real app, this would be an actual document that was encrypted and stored securely.
+
+Features of this app:
+- Secure storage of files
+- Encryption of sensitive data
+- Hidden behind a calculator interface
+- Multiple file type support
+          ''');
+          break;
+          
+        case VaultItemType.note:
+          // Notes are handled separately via _showNoteDialog
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+      }
       
-      // Add it to the vault
+      // Add the file to the vault
       await _vaultService.addFile(
         sampleFile,
         _selectedType,
-        customName: 'Sample ${_getNameForType(_selectedType).toLowerCase()} ${DateTime.now().millisecondsSinceEpoch}',
+        customName: fileName,
+        metadata: {
+          'dateCreated': DateTime.now().toIso8601String(),
+          'isDemo': true,
+        },
       );
       
       // Clean up the temporary file
@@ -138,6 +263,16 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
       }
       
       _loadItems();
+      
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Added new ${_getNameForType(_selectedType).toLowerCase()} to vault'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -296,8 +431,12 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
     return Scaffold(
       appBar: AppBar(
         title: const Text('Secure Vault'),
+        elevation: 0,
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: AppColors.primary,
+          labelColor: AppColors.primary,
+          unselectedLabelColor: AppColors.onBackground.withOpacity(0.7),
           tabs: const [
             Tab(icon: Icon(Icons.photo), text: 'Photos'),
             Tab(icon: Icon(Icons.video_library), text: 'Videos'),
@@ -305,6 +444,23 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
             Tab(icon: Icon(Icons.note), text: 'Notes'),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // Show a snackbar message for now
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Search functionality would be implemented here')),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.sort),
+            onPressed: () {
+              _showSortOptions();
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -317,6 +473,7 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addFile,
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add),
       ),
     );
@@ -475,6 +632,58 @@ class _VaultScreenState extends State<VaultScreen> with SingleTickerProviderStat
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
+  
+  void _showSortOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const ListTile(
+            title: Text('Sort By', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          ListTile(
+            leading: const Icon(Icons.calendar_today, color: AppColors.primary),
+            title: const Text('Date (newest first)'),
+            onTap: () {
+              Navigator.pop(context);
+              // Implementation would go here
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Sort by date functionality would be implemented here')),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.sort_by_alpha, color: AppColors.primary),
+            title: const Text('Name (A to Z)'),
+            onTap: () {
+              Navigator.pop(context);
+              // Implementation would go here
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Sort by name functionality would be implemented here')),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.bar_chart, color: AppColors.primary),
+            title: const Text('Size (largest first)'),
+            onTap: () {
+              Navigator.pop(context);
+              // Implementation would go here
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Sort by size functionality would be implemented here')),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
 }
 
 class _FileViewerScreen extends StatelessWidget {
@@ -494,41 +703,304 @@ class _FileViewerScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(fileName),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Share functionality would be implemented here')),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () {
+              _showFileInfo(context);
+            },
+          ),
+        ],
       ),
       body: Center(
-        child: _buildFilePreview(),
+        child: _buildFilePreview(context),
       ),
     );
   }
   
-  Widget _buildFilePreview() {
+  Widget _buildFilePreview(BuildContext context) {
     switch (type) {
       case VaultItemType.photo:
-        return Image.file(file);
+        return _buildPhotoPreview(context);
       case VaultItemType.video:
-        // For simplicity, just showing a placeholder
-        // In a real app, you'd use a video player package
-        return const Center(
-          child: Icon(Icons.play_circle_fill, size: 80),
-        );
+        return _buildVideoPreview(context);
       case VaultItemType.document:
-        // For simplicity, just showing the file name
-        // In a real app, you'd use a PDF/document viewer
-        return Center(
+        return _buildDocumentPreview(context);
+      case VaultItemType.note:
+        return const SizedBox(); // Should not happen
+    }
+  }
+
+  Widget _buildPhotoPreview(BuildContext context) {
+    try {
+      return InteractiveViewer(
+        minScale: 0.5,
+        maxScale: 3.0,
+        child: Image.file(
+          file, 
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.broken_image, size: 80, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('Could not display image', style: TextStyle(color: Colors.grey)),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    } catch (e) {
+      // For sample images that aren't real images
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(40),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.image, size: 100, color: AppColors.primary),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              fileName,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Sample image file',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Widget _buildVideoPreview(BuildContext context) {
+    // In a real app, you'd use a video player package
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.width * 0.5,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(
+              child: Icon(Icons.play_circle_fill, size: 80, color: AppColors.primary),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            fileName,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Tap play to start video',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDocumentPreview(BuildContext context) {
+    try {
+      // Try to read the text content of the file
+      String content = file.readAsStringSync();
+      
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.description, color: AppColors.primary),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          fileName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '${content.length} characters',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.onBackground.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(content),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.description, size: 80),
+            const SizedBox(height: 16),
+            Text(
+              fileName,
+              style: const TextStyle(fontSize: 20),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Error reading file: $e',
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+  }
+  
+  void _showFileInfo(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        final fileStats = file.statSync();
+        final fileSize = fileStats.size;
+        final fileModified = fileStats.modified;
+        
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.description, size: 80),
+              const Text(
+                'File Information',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 16),
-              Text(
-                fileName,
-                style: const TextStyle(fontSize: 20),
+              _buildInfoRow('Name', fileName),
+              _buildInfoRow('Type', _getTypeString()),
+              _buildInfoRow('Size', _formatFileSize(fileSize)),
+              _buildInfoRow('Modified', '${fileModified.day}/${fileModified.month}/${fileModified.year}'),
+              _buildInfoRow('Location', 'Secure Vault'),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text('Close'),
+                ),
               ),
             ],
           ),
         );
+      },
+    );
+  }
+  
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.onBackground.withOpacity(0.7),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  String _getTypeString() {
+    switch (type) {
+      case VaultItemType.photo:
+        return 'Image';
+      case VaultItemType.video:
+        return 'Video';
+      case VaultItemType.document:
+        return 'Document';
       case VaultItemType.note:
-        return const SizedBox(); // Should not happen
+        return 'Note';
+    }
+  }
+  
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) {
+      return '$bytes B';
+    } else if (bytes < 1024 * 1024) {
+      final kb = bytes / 1024;
+      return '${kb.toStringAsFixed(1)} KB';
+    } else {
+      final mb = bytes / (1024 * 1024);
+      return '${mb.toStringAsFixed(1)} MB';
     }
   }
 } 
