@@ -476,6 +476,59 @@ Features of this app:
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      bottomNavigationBar: BottomAppBar(
+        color: AppColors.surface,
+        shape: const CircularNotchedRectangle(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    tooltip: 'Settings',
+                    onPressed: () {
+                      _showSettingsMenu(context);
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.shield),
+                    tooltip: 'Security',
+                    onPressed: () {
+                      _showSecurityOptions(context);
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_sweep),
+                    tooltip: 'Trash',
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Trash functionality would be implemented here')),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.grid_view),
+                    tooltip: 'Change view',
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('View toggle functionality would be implemented here')),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
   
@@ -676,6 +729,103 @@ Features of this app:
               // Implementation would go here
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Sort by size functionality would be implemented here')),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+  
+  void _showSettingsMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const ListTile(
+            title: Text('Settings', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          ListTile(
+            leading: const Icon(Icons.lock_reset, color: AppColors.primary),
+            title: const Text('Change Passcode'),
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Change passcode functionality would be implemented here')),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.fingerprint, color: AppColors.primary),
+            title: const Text('Biometric Authentication'),
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Biometric authentication settings would be implemented here')),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.storage, color: AppColors.primary),
+            title: const Text('Storage Settings'),
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Storage settings would be implemented here')),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+  
+  void _showSecurityOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const ListTile(
+            title: Text('Security Options', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          ListTile(
+            leading: const Icon(Icons.lock, color: AppColors.primary),
+            title: const Text('Lock Vault'),
+            onTap: () {
+              Navigator.pop(context);
+              // Navigate back to calculator
+              Navigator.of(context).pop();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.backup, color: AppColors.primary),
+            title: const Text('Backup Vault'),
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Backup functionality would be implemented here')),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.restore, color: AppColors.primary),
+            title: const Text('Restore from Backup'),
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Restore functionality would be implemented here')),
               );
             },
           ),
