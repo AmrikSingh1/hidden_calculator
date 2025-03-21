@@ -20,6 +20,9 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
   String _operation = '';
   double _firstOperand = 0;
   bool _shouldReplaceInput = false;
+  
+  // This collects digits entered by the user for passcode verification
+  // The passcode is only checked when the equals button is pressed
   String _secretCode = '';
   
   final AuthService _authService = AuthService();
@@ -48,25 +51,32 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
   }
   
   void _checkSecretCode(String digit) {
-    _secretCode += digit;
-    
-    // Keep only the last 6 digits for checking
-    if (_secretCode.length > 6) {
-      _secretCode = _secretCode.substring(_secretCode.length - 6);
+    // Only append digits, not operations or equals
+    if (digit.contains(RegExp(r'[0-9.]'))) {
+      _secretCode += digit;
+      
+      // Keep only the last 6 digits for checking
+      if (_secretCode.length > 6) {
+        _secretCode = _secretCode.substring(_secretCode.length - 6);
+      }
     }
-    
-    _checkForSpecialPasscode();
   }
   
   Future<void> _checkForSpecialPasscode() async {
+    // Only attempt passcode verification if at least 4 digits are entered
     if (_secretCode.length < 4) return;
     
+    // The passcode verification only happens when the equals button is pressed
+    // This provides an extra layer of security - must press equals to access vault
     if (await _authService.verifySpecialPasscode(_secretCode)) {
       widget.onSpecialCodeEntered(_secretCode);
+      // Reset the secret code after successful vault access
+      _secretCode = '';
     }
   }
   
   void _appendDigit(String digit) {
+    // Just collect the digit without checking passcode yet
     _checkSecretCode(digit);
     
     if (_shouldReplaceInput) {
@@ -191,6 +201,12 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
   }
   
   void _calculateResult() {
+    // Check if the entered digits match the vault passcode
+    // This is triggered ONLY when the user presses the equals button
+    // If a valid passcode has been entered, the vault will be shown
+    _checkForSpecialPasscode();
+    
+    // Then proceed with normal calculator function
     if (_operation.isEmpty) return;
     
     final double secondOperand = double.tryParse(_input) ?? 0;
@@ -202,9 +218,6 @@ class _CalculatorState extends State<Calculator> with SingleTickerProviderStateM
       _firstOperand = 0;
       _shouldReplaceInput = true;
     });
-    
-    // Check if the result is a special code
-    _checkSecretCode('=');
   }
   
   Widget _buildButton(
